@@ -1,14 +1,12 @@
 from django.urls import path
 from . import views
 
-#http://127.0.0.1:8000/anasayfa/   anasayfa
-#http://http://127.0.0.1:8000/     anasayfa
-#http://http://127.0.0.1:8000/courses/    courses
-
-
 
 urlpatterns = [
-    path("", views.home),
-    path("anasayfa/", views.home),
-    path("courses/", views.courses),
+    path("", views.index),
+    path("details", views.details),
+    path("programming", views.programming),
+    path("mobileapps", views.mobileapps),
+    path("category/<str:category_id>", views.getCoursesByCategoryId),
+    path("category/<int:category_name>", views.getCoursesByCategory, name="courses_by_category"),
 ]
