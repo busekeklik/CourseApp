@@ -9,15 +9,13 @@
     <div class="row">
         <div class="col-3">
             <!-- Menu -->
-            {% comment %} {% include "courses/partials/_categories.html" %} {% endcomment %}
-            <div class="list-group">
-                {% for category in categories %}
-                    <a href={% url "courses_by_category" category %} class="list-group-item list-group-item-action"></a>
-                {% endfor %}
-            </div>
+            {% include "courses/partials/_categories.html" %}
         </div>
         <div class="col-9">
             <!-- Content -->
+            {% for course in courses %}
+                {% include "courses/partials/_course.html" %}
+            {% endfor %}
             
         </div>
     </div>
