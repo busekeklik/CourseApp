@@ -8,7 +8,10 @@ class Course(models.Model):
     imageUrl = models.CharField(max_length=50, blank=False)
     date = models.DateField()
     isActive = models.BooleanField(default=True)
-    slug = models.SlugField(default="", null=False, unique=True, db_index=True)
+    slug = models.SlugField(default="", blank=True, null=False, unique=True, db_index=True)
+    
+    def __str__(self):
+        return f"{self.title} {self.date}"
 
 
 class Category(models.Model):
