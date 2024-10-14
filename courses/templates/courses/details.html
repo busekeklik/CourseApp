@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block page_title %}
+    {{course.title}}
+{% endblock page_title %}
+    
+{% block content %}
+    <div class="container mt-3"></div>
+    <div class="row">
+        <div class="col-4">
+            <img class="img-fluid rounded-start" src="{{course.image_url}}" class="img-fluid" alt="{{course.title}}">
+
+        </div>
+        <div class="col-8">
+            <h1 class="h3"> {{course.title}} </h1>
+            <p>
+                {{course.description}}
+            </p>
+        </div>
+    </div>
+
+{% endblock content %}

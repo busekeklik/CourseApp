@@ -1,7 +1,9 @@
 from datetime import date, datetime
-from django.shortcuts import redirect, render
-from django.http import HttpResponse,HttpResponseNotFound , HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.http import  HttpResponseNotFound , Http404
 from django.urls import reverse
+
+from courses.models import Course, Category
 
 data = {
     "programming": "Programming",
@@ -51,8 +53,8 @@ db = {
 
 def index(request):
     #list comprehension
-    courses = [course for course in db["courses"] if course["isActive"]]
-    category_list = db["categories"]
+    courses = Course.objects.all(isActive=True)
+    category_list = Category.objects.all()
 
     # for course in db["courses"]:
     #     if course["isActive"]:
@@ -63,14 +65,18 @@ def index(request):
         "courses": courses
     })
 
-def details(request):
-    return HttpResponse("Hello, Details!")
+def details(request, slug):
+    # try:
+    #     course = Course.objects.get(pk=course_id)
+    # except:
+    #     raise Http404("Course not found")
 
-def programming(request):
-    return HttpResponse("Hello, Programming!")
+    course = get_object_or_404(Course, slug=slug)
+    context = {
+        "course": course
+    }
+    return render(request, "courses/details.html", context)
 
-def mobileapps(request):
-    return HttpResponse("Hello, Mobile Apps!")
 
 def getCoursesByCategory(request, category_name):
     try:
