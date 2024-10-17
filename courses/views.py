@@ -1,59 +1,11 @@
-from datetime import date, datetime
-from django.shortcuts import get_object_or_404, redirect, render
-from django.http import  HttpResponseNotFound , Http404
-from django.urls import reverse
-
+from django.shortcuts import get_object_or_404, render, redirect
+from django.core.paginator import Paginator
+from courses.forms import CourseCreateForm
 from courses.models import Course, Category
-
-data = {
-    "programming": "Programming",
-    "webdevelopment": "Web Development",
-    "mobileapps": "Mobile Apps",
-}
-
-db = {
-    "courses": [
-        {
-            "title": "Python Programming",
-            "description": "Learn Python Programming",
-            "category": "programming",
-            "image_url":" ",
-            "slug": "python-programming",
-            "date":datetime.now(),
-            "isActive": True,
-            "isUpdated": False
-        },
-        {
-            "title": "Django Web Development",
-            "description": "Learn Django Web Development",
-            "category": "webdevelopment",
-            "image_url":" ",
-            "slug": "django-web-development",
-            "date":date(2021, 1, 2),
-            "isActive": False,
-            "isUpdated": True
-        },
-        {
-            "title": "Flask Web Development",
-            "description": "Learn Flask Web Development",
-            "category": "webdevelopment",
-            "image_url":" ",
-            "slug": "flask-web-development",
-            "date":date(2021, 1, 3),
-            "isActive": True,
-            "isUpdated": True
-        }
-    ],
-    "categories": [ 
-        {"id": 1, "name" : "programming", "slug": "programming"}, 
-        {"id": 2, "name" : "webdevelopment", "slug": "webdevelopment"}, 
-        {"id": 3, "name" : "mobileapps", "slug": "mobileapps"}
-    ]
-}
 
 def index(request):
     #list comprehension
-    courses = Course.objects.all(isActive=True)
+    courses = Course.objects.all(isActive=True, isHome=True)
     category_list = Category.objects.all()
 
     # for course in db["courses"]:
@@ -64,6 +16,37 @@ def index(request):
         "categories": category_list,
         "courses": courses
     })
+
+def create_course(request):
+    if request.method == "POST":
+        form = CourseCreateForm(request.POST)
+
+        if form.is_valid():
+            course = Course(title = form.cleaned_data["title"],
+                            description = form.cleaned_data["description"],
+                            imageUrl = form.cleaned_data["imageUrl"],
+                            slug = form.cleaned_data["slug"])
+            course.save()
+            return redirect("/courses")
+    form = CourseCreateForm()
+    return render(request, "courses/create_course.html", {"form":form})
+
+def search(request):
+    if "q" in request.GET and request.GET["q"] != "":
+        q = request.GET["q"]
+        courses = Course.objects.filter(isActive=True, title__contains=q).order_by("date")
+        categories = Category.objects.all()
+    else :
+        return redirect("/courses")
+
+
+    return render(request, "courses/search.html", {
+        "categories": categories,
+        "courses": courses,
+        
+    })
+
+
 
 def details(request, slug):
     # try:
@@ -78,21 +61,18 @@ def details(request, slug):
     return render(request, "courses/details.html", context)
 
 
-def getCoursesByCategory(request, category_name):
-    try:
-        category_text = data[category_name];
-        return render(request, "courses/category.html", {
-            "category": category_name,
-            "category_text": category_text})
-    except:
-        return HttpResponseNotFound("Category not found")
+def getCoursesByCategory(request, slug):
+    courses = Course.objects.filter(categories__slug=slug, isActive=True).order_by("date")
+    categories = Category.objects.all()
 
-def getCoursesByCategoryId(request, category_id):
-    category_list = list(data.keys())
-    if category_id < 1 or category_id > len(category_list):
-        return HttpResponseNotFound("Category not found")
-    category_name = category_list[category_id - 1]
+    paginator = Paginator(courses, 2)
+    page = request.GET.get("page", 1)
+    page_obj = paginator.page(page)
 
-    redirect_url = reverse("courses_by_category", args=[category_name])
+    return render(request, "courses/list.html", {
+        "categories": categories,
+        "page_obj": page_obj,
+        "selected_category": slug
+    })
 
-    return redirect(redirect_url)
+
